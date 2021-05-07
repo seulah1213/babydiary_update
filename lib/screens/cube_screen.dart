@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:babydiary_seulahpark/helpers/db_helper.dart';
 import 'package:babydiary_seulahpark/models/cube_model.dart';
 import 'package:babydiary_seulahpark/screens/add_cube_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 
 class CubeScreen extends StatefulWidget {
@@ -15,10 +18,22 @@ class _CubeScreenState extends State<CubeScreen> {
   String searchString = "";
   TextEditingController searchController = TextEditingController();
 
+  final String iOSTestId = 'ca-app-pub-1296851216795797/7439545086';
+  final String androidTestId = 'ca-app-pub-1296851216795797/8865426952';
+
+  BannerAd banner;
+
   @override
   void initState() {
     super.initState();
     _updateCubeList();
+
+    banner = BannerAd(
+      size: AdSize.banner,
+      adUnitId: Platform.isIOS ? iOSTestId : androidTestId,
+      listener: AdListener(),
+      request: AdRequest(),
+    )..load();
   }
 
   _updateCubeList() {
@@ -29,27 +44,28 @@ class _CubeScreenState extends State<CubeScreen> {
 
   Widget _buildCube(Cube cube) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
       child: Column(
         children: [
           ListTile(
-            leading: Text(
-              cube.title,
-              style: TextStyle(
-                fontSize: 25.0,
+            leading: Container(
+              width: MediaQuery.of(context).size.width * 0.20,
+              child: Text(
+                cube.title,
+                style: TextStyle(fontSize: 20.0, color: Colors.black),
               ),
             ),
             title: Text(
-              '수량: ${cube.cubecount.toString()}',
-              style: TextStyle(fontSize: 15.0, color: Colors.grey.shade600),
+              '수량: ${cube.cubecount.toString()}개',
+              style: TextStyle(fontSize: 15.0, color: Colors.grey.shade800),
             ),
             subtitle: Text(
-              '사용기한: ${_dateFormatter.format(cube.date)}',
-              style: TextStyle(fontSize: 15.0, color: Colors.grey.shade600),
+              '사용기한: ${_dateFormatter.format(cube.endDate)}',
+              style: TextStyle(fontSize: 15.0, color: Colors.grey.shade800),
             ),
             trailing: Text(
-              DateTime.now().difference(cube.date).inDays < 0
-                  ? 'D${DateTime.now().difference(cube.date).inDays.toString()}'
+              DateTime.now().difference(cube.endDate).inDays - 1 < 0
+                  ? 'D${DateTime.now().difference(cube.endDate).inDays - 1}'
                   : '기한지남',
               style: TextStyle(
                   fontSize: 15.0,
@@ -77,6 +93,7 @@ class _CubeScreenState extends State<CubeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         title: Text('큐브관리'),
         centerTitle: true,
         actions: [
@@ -93,34 +110,67 @@ class _CubeScreenState extends State<CubeScreen> {
               })
         ],
       ),
-      body: FutureBuilder(
-        future: _cubeList,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-          return ListView.builder(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
-            itemCount: 1 + snapshot.data.length,
-            itemBuilder: (BuildContext context, int index) {
-              if (index == 0) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10.0, vertical: 10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 0.0),
-                    ],
-                  ),
+      body: Column(
+        children: [
+          SizedBox(height: 10.0),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 25.0),
+            child: TextField(
+              onChanged: (value) {
+                setState(() {
+                  searchString = value;
+                });
+              },
+              controller: searchController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Color(0xFFFE8189),
+                ),
+                hintText: '큐브 이름 검색',
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                    borderSide: BorderSide(width: 1.0)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                    borderSide: BorderSide(width: 1.0)),
+              ),
+            ),
+          ),
+          SizedBox(height: 5.0),
+          Expanded(
+            child: FutureBuilder(
+              future: _cubeList,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return ListView.builder(
+                  padding: EdgeInsets.symmetric(vertical: 10.0),
+                  itemCount: 1 + snapshot.data.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (index == 0) {
+                      return SizedBox(height: 0.0);
+                    }
+                    return snapshot.data[index - 1].title.contains(searchString)
+                        ? _buildCube(snapshot.data[index - 1])
+                        : Container();
+                  },
                 );
-              }
-              return _buildCube(snapshot.data[index - 1]);
-            },
-          );
-        },
+              },
+            ),
+          ),
+          Container(
+            height: 50.0,
+            child: this.banner == null
+                ? Container()
+                : AdWidget(
+                    ad: banner,
+                  ),
+          ),
+        ],
       ),
     );
   }

@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:babydiary_seulahpark/helpers/food_db_helper.dart';
 import 'package:babydiary_seulahpark/models/color_picker.dart';
 import 'package:babydiary_seulahpark/models/food_model.dart';
 import 'package:babydiary_seulahpark/screens/add_calendar_screen.dart';
 import 'package:babydiary_seulahpark/screens/drawer_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -14,6 +17,10 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   List<Food> foodList;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final String iOSTestId = 'ca-app-pub-1296851216795797/7439545086';
+  final String androidTestId = 'ca-app-pub-1296851216795797/8865426952';
+
+  BannerAd banner;
 
   MeetingDataSource getMeetingDetails() {
     return MeetingDataSource(foodList);
@@ -23,6 +30,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void initState() {
     super.initState();
     _updateFoodList();
+
+    banner = BannerAd(
+      size: AdSize.banner,
+      adUnitId: Platform.isIOS ? iOSTestId : androidTestId,
+      listener: AdListener(),
+      request: AdRequest(),
+    )..load();
   }
 
   _updateFoodList() {
@@ -130,6 +144,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
+        elevation: 0,
         leading: IconButton(
           onPressed: () {
             return _scaffoldKey.currentState?.openDrawer();
@@ -151,22 +166,37 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ],
       ),
       drawer: DrawerScreen(),
-      body: SfCalendar(
-        view: CalendarView.month,
-        todayHighlightColor: Color(0xFFFE8189),
-        headerHeight: 50,
-        headerStyle: CalendarHeaderStyle(textAlign: TextAlign.center),
-        appointmentTextStyle: TextStyle(
-          fontSize: 11,
-          color: Colors.white,
-          fontWeight: FontWeight.w400,
-        ),
-        dataSource: getMeetingDetails(),
-        onTap: calendarTapped,
-        monthViewSettings: MonthViewSettings(
-          appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-          numberOfWeeksInView: 4,
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SfCalendar(
+              view: CalendarView.month,
+              todayHighlightColor: Theme.of(context).accentColor,
+              backgroundColor: Theme.of(context).primaryColor,
+              headerHeight: 50,
+              headerStyle: CalendarHeaderStyle(textAlign: TextAlign.center),
+              appointmentTextStyle: TextStyle(
+                fontSize: 11,
+                color: Colors.white,
+                fontWeight: FontWeight.w400,
+              ),
+              dataSource: getMeetingDetails(),
+              onTap: calendarTapped,
+              monthViewSettings: MonthViewSettings(
+                appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
+                numberOfWeeksInView: 4,
+              ),
+            ),
+          ),
+          Container(
+            height: 50.0,
+            child: this.banner == null
+                ? Container()
+                : AdWidget(
+                    ad: banner,
+                  ),
+          )
+        ],
       ),
     );
   }

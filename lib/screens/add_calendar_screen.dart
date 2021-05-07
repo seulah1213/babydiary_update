@@ -17,7 +17,7 @@ class AddCalendarScreen extends StatefulWidget {
 class _AddCalendarScreenState extends State<AddCalendarScreen> {
   final _formKey = GlobalKey<FormState>();
   String _name = '';
-  int _background;
+  int _background = 0;
   int _eventCount = 0;
   DateTime _fromDate = DateTime.now();
   DateTime _toDate = DateTime.now();
@@ -117,180 +117,190 @@ class _AddCalendarScreenState extends State<AddCalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
         title: Text(
-          '식단추가',
+          widget.food == null ? '식단추가' : '식단편집',
         ),
       ),
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 20.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: ColorPicker(
-                      selectedIndex: _background,
-                      onTap: (index) {
-                        setState(() {
+      body: Theme(
+        data: new ThemeData(
+          primaryColor: Colors.red,
+        ),
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: ColorPicker(
+                        selectedIndex: _background,
+                        onTap: (index) {
+                          setState(() {
+                            _background = index;
+                          });
                           _background = index;
-                        });
-                        _background = index;
-                      },
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: DropdownButtonFormField(
-                      icon: Icon(Icons.arrow_drop_down_circle),
-                      iconSize: 20.0,
-                      iconEnabledColor: Theme.of(context).primaryColor,
-                      items: _steps.map((String step) {
-                        return DropdownMenuItem(
-                          value: step,
-                          child: Text(
-                            step,
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15.0,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                      style: TextStyle(fontSize: 15.0),
-                      decoration: InputDecoration(
-                        labelText: '이유식 단계',
-                        labelStyle: TextStyle(fontSize: 15.0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                      validator: (input) =>
-                          _step == null ? 'Please select a level' : null,
-                      onChanged: (value) {
-                        setState(() {
-                          _step = value;
-                        });
-                      },
-                      value: _step,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: TextFormField(
-                      style: TextStyle(fontSize: 15.0),
-                      decoration: InputDecoration(
-                        labelText: '이유식 이름',
-                        labelStyle: TextStyle(fontSize: 15.0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                      validator: (input) => input.trim().isEmpty
-                          ? 'Please enter a cube title'
-                          : null,
-                      onSaved: (input) => _name = input,
-                      initialValue: _name,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: TextFormField(
-                      style: TextStyle(fontSize: 15.0),
-                      keyboardType: TextInputType.number,
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
-                      ],
-                      decoration: InputDecoration(
-                        labelText: '이유식 양',
-                        labelStyle: TextStyle(fontSize: 15.0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                      validator: (input) => input.trim().isEmpty
-                          ? 'Please enter a cube title'
-                          : null,
-                      onSaved: (input) => _eventCount = int.tryParse(input),
-                      initialValue: _eventCount.toString(),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: TextFormField(
-                      readOnly: true,
-                      controller: _fromDateController,
-                      style: TextStyle(fontSize: 15.0),
-                      onTap: _handleFromDatePicker,
-                      decoration: InputDecoration(
-                        labelText: '시작날짜',
-                        labelStyle: TextStyle(fontSize: 15.0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
+                        },
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    child: TextFormField(
-                      readOnly: true,
-                      controller: _toDateController,
-                      style: TextStyle(fontSize: 15.0),
-                      onTap: _handleToDatePicker,
-                      decoration: InputDecoration(
-                        labelText: '종료날짜',
-                        labelStyle: TextStyle(fontSize: 15.0),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 20.0),
-                    height: 60.0,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    child: TextButton(
-                      child: Text(
-                        widget.food == null ? 'Add' : 'Update',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.0,
-                        ),
-                      ),
-                      onPressed: _addFood,
-                    ),
-                  ),
-                  widget.food != null
-                      ? Container(
-                          margin: EdgeInsets.symmetric(vertical: 20.0),
-                          height: 60.0,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor,
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          child: TextButton(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: DropdownButtonFormField(
+                        icon: Icon(Icons.arrow_drop_down_circle),
+                        iconSize: 20.0,
+                        iconEnabledColor: Theme.of(context).accentColor,
+                        items: _steps.map((String step) {
+                          return DropdownMenuItem(
+                            value: step,
                             child: Text(
-                              'Delete',
+                              step,
                               style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20.0,
+                                color: Colors.black,
+                                fontSize: 15.0,
                               ),
                             ),
-                            onPressed: _deleteFood,
+                          );
+                        }).toList(),
+                        style: TextStyle(fontSize: 15.0),
+                        decoration: InputDecoration(
+                          labelText: '이유식 단계',
+                          labelStyle: TextStyle(fontSize: 15.0),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                              )),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            borderSide: BorderSide(
+                              color: Colors.red,
+                            ),
                           ),
-                        )
-                      : SizedBox.shrink(),
-                ],
+                        ),
+                        validator: (input) =>
+                            _step == null ? '이유식 단계를 선택해주세요' : null,
+                        onChanged: (value) {
+                          setState(() {
+                            _step = value;
+                          });
+                        },
+                        value: _step,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: TextFormField(
+                        style: TextStyle(fontSize: 15.0),
+                        decoration: InputDecoration(
+                          labelText: '이유식 이름',
+                          labelStyle: TextStyle(fontSize: 15.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                        validator: (input) =>
+                            input.trim().isEmpty ? '이유식 이름을 입력해주세요' : null,
+                        onSaved: (input) => _name = input,
+                        initialValue: _name,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: TextFormField(
+                        style: TextStyle(fontSize: 15.0),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
+                        ],
+                        decoration: InputDecoration(
+                          labelText: '이유식 양',
+                          labelStyle: TextStyle(fontSize: 15.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                        onSaved: (input) => _eventCount = int.tryParse(input),
+                        initialValue: _eventCount.toString(),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: TextFormField(
+                        readOnly: true,
+                        controller: _fromDateController,
+                        style: TextStyle(fontSize: 15.0),
+                        onTap: _handleFromDatePicker,
+                        decoration: InputDecoration(
+                          labelText: '시작날짜',
+                          labelStyle: TextStyle(fontSize: 15.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      child: TextFormField(
+                        readOnly: true,
+                        controller: _toDateController,
+                        style: TextStyle(fontSize: 15.0),
+                        onTap: _handleToDatePicker,
+                        decoration: InputDecoration(
+                          labelText: '종료날짜',
+                          labelStyle: TextStyle(fontSize: 15.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 10.0),
+                      height: 60.0,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).accentColor,
+                        borderRadius: BorderRadius.circular(30.0),
+                      ),
+                      child: TextButton(
+                        child: Text(
+                          widget.food == null ? 'Add' : 'Update',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20.0,
+                          ),
+                        ),
+                        onPressed: _addFood,
+                      ),
+                    ),
+                    widget.food != null
+                        ? Container(
+                            margin: EdgeInsets.symmetric(vertical: 10.0),
+                            height: 60.0,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).accentColor,
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            child: TextButton(
+                              child: Text(
+                                'Delete',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20.0,
+                                ),
+                              ),
+                              onPressed: _deleteFood,
+                            ),
+                          )
+                        : SizedBox.shrink(),
+                  ],
+                ),
               ),
             ),
           ),

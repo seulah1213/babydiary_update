@@ -16,13 +16,14 @@ class AddCubeScreen extends StatefulWidget {
 class _AddCubeScreenState extends State<AddCubeScreen> {
   final _formKey = GlobalKey<FormState>();
   String _title = '';
-  String _priority;
-  DateTime _date = DateTime.now();
+  DateTime _startDate = DateTime.now();
+  DateTime _endDate = DateTime.now();
   int _number = 0;
-  TextEditingController _dateController = TextEditingController();
+
+  TextEditingController _startDateController = TextEditingController();
+  TextEditingController _endDateController = TextEditingController();
 
   final DateFormat _dateFormatter = DateFormat('MMM dd, yyyy');
-  final List<String> _priorities = ['Low', 'Medium', 'High'];
 
   @override
   void initState() {
@@ -30,32 +31,49 @@ class _AddCubeScreenState extends State<AddCubeScreen> {
 
     if (widget.cube != null) {
       _title = widget.cube.title;
-      _date = widget.cube.date;
+      _startDate = widget.cube.startDate;
+      _endDate = widget.cube.endDate;
       _number = widget.cube.cubecount;
-      _priority = widget.cube.priority;
     }
 
-    _dateController.text = _dateFormatter.format(_date);
+    _startDateController.text = _dateFormatter.format(_startDate);
+    _endDateController.text = _dateFormatter.format(_endDate);
   }
 
   @override
   void dispose() {
-    _dateController.dispose();
+    _startDateController.dispose();
+    _endDateController.dispose();
     super.dispose();
   }
 
-  _handleDatePicker() async {
+  _handleStartDatePicker() async {
     final DateTime date = await showDatePicker(
       context: context,
-      initialDate: _date,
+      initialDate: _startDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    if (date != null && date != _date) {
+    if (date != null && date != _startDate) {
       setState(() {
-        _date = date;
+        _startDate = date;
       });
-      _dateController.text = _dateFormatter.format(date);
+      _startDateController.text = _dateFormatter.format(date);
+    }
+  }
+
+  _handleEndDatePicker() async {
+    final DateTime date = await showDatePicker(
+      context: context,
+      initialDate: _endDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (date != null && date != _endDate) {
+      setState(() {
+        _endDate = date;
+      });
+      _endDateController.text = _dateFormatter.format(date);
     }
   }
 
@@ -68,10 +86,13 @@ class _AddCubeScreenState extends State<AddCubeScreen> {
   _submit() {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
-      print('$_title, $_date, $_number, $_priority');
+      print('$_title, $_number, $_startDate, $_endDate');
 
       Cube cube = Cube(
-          title: _title, date: _date, priority: _priority, cubecount: _number);
+          title: _title,
+          cubecount: _number,
+          startDate: _startDate,
+          endDate: _endDate);
       if (widget.cube == null) {
         DBhelper.instance.insertCube(cube);
       } else {
@@ -86,173 +107,142 @@ class _AddCubeScreenState extends State<AddCubeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onTap: () => FocusScope.of(context).unfocus(),
-        child: SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 80.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Icon(
-                    Icons.arrow_back_ios,
-                    size: 30.0,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                SizedBox(height: 20.0),
-                Text(
-                  widget.cube == null ? '큐브추가' : '큐브편집',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 40.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 10.0),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          style: TextStyle(fontSize: 18.0),
-                          decoration: InputDecoration(
-                            labelText: 'Title',
-                            labelStyle: TextStyle(fontSize: 18.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
+      appBar: AppBar(
+        elevation: 0,
+        title: Text(widget.cube == null ? '큐브추가' : '큐브편집'),
+      ),
+      body: Theme(
+        data: new ThemeData(
+          primaryColor: Colors.red,
+        ),
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: SingleChildScrollView(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: TextFormField(
+                            style: TextStyle(fontSize: 18.0),
+                            decoration: InputDecoration(
+                              labelText: '큐브이름',
+                              labelStyle: TextStyle(fontSize: 18.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
+                            validator: (input) =>
+                                input.trim().isEmpty ? '큐브 이름을 입력해주세요' : null,
+                            onSaved: (input) => _title = input,
+                            initialValue: _title,
                           ),
-                          validator: (input) => input.trim().isEmpty
-                              ? 'Please enter a cube title'
-                              : null,
-                          onSaved: (input) => _title = input,
-                          initialValue: _title,
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          style: TextStyle(fontSize: 18.0),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: <TextInputFormatter>[
-                            FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Number',
-                            labelStyle: TextStyle(fontSize: 18.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: TextFormField(
+                            style: TextStyle(fontSize: 18.0),
+                            keyboardType: TextInputType.number,
+                            inputFormatters: <TextInputFormatter>[
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[0-9]'))
+                            ],
+                            decoration: InputDecoration(
+                              labelText: '큐브수량',
+                              labelStyle: TextStyle(fontSize: 18.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
+                            validator: (input) =>
+                                input.trim().isEmpty ? '큐브 수량을 입력해주세요' : null,
+                            onSaved: (input) => _number = int.tryParse(input),
+                            initialValue: _number.toString(),
                           ),
-                          validator: (input) => input.trim().isEmpty
-                              ? 'Please enter a cube title'
-                              : null,
-                          onSaved: (input) => _number = int.tryParse(input),
-                          initialValue: _number.toString(),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: TextFormField(
-                          readOnly: true,
-                          controller: _dateController,
-                          style: TextStyle(fontSize: 18.0),
-                          onTap: _handleDatePicker,
-                          decoration: InputDecoration(
-                            labelText: 'Date',
-                            labelStyle: TextStyle(fontSize: 18.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: TextFormField(
+                            readOnly: true,
+                            controller: _startDateController,
+                            style: TextStyle(fontSize: 18.0),
+                            onTap: _handleStartDatePicker,
+                            decoration: InputDecoration(
+                              labelText: '만든날짜',
+                              labelStyle: TextStyle(fontSize: 18.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: DropdownButtonFormField(
-                          icon: Icon(Icons.arrow_drop_down_circle),
-                          iconSize: 22.0,
-                          iconEnabledColor: Theme.of(context).primaryColor,
-                          items: _priorities.map((String priority) {
-                            return DropdownMenuItem(
-                              value: priority,
-                              child: Text(
-                                priority,
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 18.0,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10.0),
+                          child: TextFormField(
+                            readOnly: true,
+                            controller: _endDateController,
+                            style: TextStyle(fontSize: 18.0),
+                            onTap: _handleEndDatePicker,
+                            decoration: InputDecoration(
+                              labelText: '사용기한',
+                              labelStyle: TextStyle(fontSize: 18.0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.symmetric(vertical: 10.0),
+                          height: 60.0,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).accentColor,
+                            borderRadius: BorderRadius.circular(30.0),
+                          ),
+                          child: TextButton(
+                            child: Text(
+                              widget.cube == null ? 'Add' : 'Update',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20.0,
+                              ),
+                            ),
+                            onPressed: _submit,
+                          ),
+                        ),
+                        widget.cube != null
+                            ? Container(
+                                margin: EdgeInsets.symmetric(vertical: 10.0),
+                                height: 60.0,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).accentColor,
+                                  borderRadius: BorderRadius.circular(30.0),
                                 ),
-                              ),
-                            );
-                          }).toList(),
-                          style: TextStyle(fontSize: 18.0),
-                          decoration: InputDecoration(
-                            labelText: 'Priority',
-                            labelStyle: TextStyle(fontSize: 18.0),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                          ),
-                          validator: (input) => _priority == null
-                              ? 'Please select a priority level'
-                              : null,
-                          onChanged: (value) {
-                            setState(() {
-                              _priority = value;
-                            });
-                          },
-                          value: _priority,
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.symmetric(vertical: 20.0),
-                        height: 60.0,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(30.0),
-                        ),
-                        child: TextButton(
-                          child: Text(
-                            widget.cube == null ? 'Add' : 'Update',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20.0,
-                            ),
-                          ),
-                          onPressed: _submit,
-                        ),
-                      ),
-                      widget.cube != null
-                          ? Container(
-                              margin: EdgeInsets.symmetric(vertical: 20.0),
-                              height: 60.0,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor,
-                                borderRadius: BorderRadius.circular(30.0),
-                              ),
-                              child: TextButton(
-                                child: Text(
-                                  'Delete',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20.0,
+                                child: TextButton(
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20.0,
+                                    ),
                                   ),
+                                  onPressed: _delete,
                                 ),
-                                onPressed: _delete,
-                              ),
-                            )
-                          : SizedBox.shrink(),
-                    ],
-                  ),
-                )
-              ],
+                              )
+                            : SizedBox.shrink(),
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
         ),

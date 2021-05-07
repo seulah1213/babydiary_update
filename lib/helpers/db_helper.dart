@@ -13,9 +13,9 @@ class DBhelper {
   String cubeTable = 'cube_table';
   String colId = 'id';
   String colTitle = 'title';
-  String colDate = 'date';
-  String colPriority = 'priority';
   String colCount = 'cubecount';
+  String colStartDate = 'startDate';
+  String colEndDate = 'endDate';
 
   Future<Database> get db async {
     if (_db == null) {
@@ -37,9 +37,9 @@ class DBhelper {
       CREATE TABLE $cubeTable(
       $colId INTEGER PRIMARY KEY AUTOINCREMENT,
       $colTitle TEXT,
-      $colDate TEXT,
-      $colPriority TEXT,
-      $colCount INTEGER
+      $colCount INTEGER,
+      $colStartDate TEXT,
+      $colEndDate TEXT
       )
     ''');
   }
@@ -56,7 +56,7 @@ class DBhelper {
     cubeMapList.forEach((cubeMap) {
       cubeList.add(Cube.fromMap(cubeMap));
     });
-    cubeList.sort((cubeA, cubeB) => cubeA.date.compareTo(cubeB.date));
+    cubeList.sort((cubeA, cubeB) => cubeA.endDate.compareTo(cubeB.endDate));
     return cubeList;
   }
 
