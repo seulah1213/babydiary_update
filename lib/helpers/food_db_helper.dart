@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:babydiary_seulahpark/models/food_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart' as p;
 
 class FoodDBhelper {
   static final FoodDBhelper instance = FoodDBhelper._instance();
@@ -35,8 +36,8 @@ class FoodDBhelper {
   }
 
   Future<Database> _initDB() async {
-    Directory dir = await getApplicationDocumentsDirectory();
-    String path = dir.path + 'food_list.db';
+    String databasesPath = await getDatabasesPath();
+    String path = p.join(databasesPath, 'food_list.db');
     final foodListDB =
         await openDatabase(path, version: 1, onCreate: _createDB);
     return foodListDB;

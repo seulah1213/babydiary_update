@@ -34,6 +34,8 @@ dependencies:
   image_picker: ^0.7.4
   datetime_picker_formfield: ^2.0.0
   google_mobile_ads: ^0.12.1+1
+  app_tracking_transparency: ^2.0.0
+  path: any
 
 
   # The following adds the Cupertino Icons font to your application.

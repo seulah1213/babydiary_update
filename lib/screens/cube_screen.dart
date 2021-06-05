@@ -18,8 +18,8 @@ class _CubeScreenState extends State<CubeScreen> {
   String searchString = "";
   TextEditingController searchController = TextEditingController();
 
-  final String iOSTestId = 'ca-app-pub-1296851216795797/7439545086';
-  final String androidTestId = 'ca-app-pub-1296851216795797/8865426952';
+  final String iOSTestId = 'ca-app-pub-3940256099942544/2934735716';
+  final String androidTestId = 'ca-app-pub-3940256099942544/6300978111';
 
   BannerAd banner;
 
@@ -27,6 +27,7 @@ class _CubeScreenState extends State<CubeScreen> {
   void initState() {
     super.initState();
     _updateCubeList();
+    print(_cubeList);
 
     banner = BannerAd(
       size: AdSize.banner,

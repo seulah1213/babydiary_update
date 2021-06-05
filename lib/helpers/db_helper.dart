@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:babydiary_seulahpark/models/cube_model.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart' as p;
 
 class DBhelper {
   static final DBhelper instance = DBhelper._instance();
@@ -25,8 +26,8 @@ class DBhelper {
   }
 
   Future<Database> _initDB() async {
-    Directory dir = await getApplicationDocumentsDirectory();
-    String path = dir.path + 'cube_list.db';
+    String databasesPath = await getDatabasesPath();
+    String path = p.join(databasesPath, 'cube_list.db');
     final cubeListDB =
         await openDatabase(path, version: 1, onCreate: _createDB);
     return cubeListDB;

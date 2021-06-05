@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:babydiary_seulahpark/helpers/food_db_helper.dart';
 import 'package:babydiary_seulahpark/models/color_picker.dart';
 import 'package:babydiary_seulahpark/models/food_model.dart';
 import 'package:babydiary_seulahpark/screens/add_calendar_screen.dart';
 import 'package:babydiary_seulahpark/screens/drawer_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
@@ -17,8 +19,9 @@ class CalendarScreen extends StatefulWidget {
 class _CalendarScreenState extends State<CalendarScreen> {
   List<Food> foodList;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final String iOSTestId = 'ca-app-pub-1296851216795797/7439545086';
-  final String androidTestId = 'ca-app-pub-1296851216795797/8865426952';
+  final String iOSTestId = 'ca-app-pub-3940256099942544/2934735716';
+  final String androidTestId = 'ca-app-pub-3940256099942544/6300978111';
+  String _authStatus = 'Unknown';
 
   BannerAd banner;
 
@@ -30,6 +33,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   void initState() {
     super.initState();
     _updateFoodList();
+    AppTrackingTransparency.requestTrackingAuthorization();
 
     banner = BannerAd(
       size: AdSize.banner,
